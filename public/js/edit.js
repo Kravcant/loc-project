@@ -1,0 +1,1 @@
+import { Department } from "./department.js";
