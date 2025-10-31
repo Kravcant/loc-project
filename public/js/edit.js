@@ -70,6 +70,24 @@ function populateDepartmentDropdown() {
 		option.textContent = dept.getDivName();
 		divisionSelect.appendChild(option);
 	});
+
+    /*
+    // Find and update the department
+    const dept = form.departments.find(
+        (d) => d.getDivName() === divisionSelect.value
+    );
+
+    if (!dept) {
+        alert("Department not found!");
+        return; // ← This is the important return!
+    }
+
+    // Update department data
+    dept.setChairName(chairRef.value.trim());
+    dept.setDeanName(deanRef.value.trim());
+    dept.setLocRep(locRef.value.trim());
+    dept.setPenContact(penRef.value.trim());
+    */
 }
 
 // Function to add event listners for everything inside the form
@@ -80,7 +98,9 @@ function addEventListeners() {
 
 	divisionSelect.addEventListener("change", handleDivisionChange);
 	saveBtn.addEventListener("click", saveEdits);
+    /*
 	cancelBtn.addEventListener("click", cancelEdits);
+    */
 }
 
 // Event handlers
@@ -105,4 +125,75 @@ function handleDivisionChange() {
         form.inputFields.get("loc").value = dept.getLocRep();
 		form.inputFields.get("pen").value = dept.getPenContact();
 	}
+}
+
+// Function to save the edits, this will be called on clicked
+function saveEdits() {
+	// Get all input fields from the form map
+	const divisionSelect = form.inputFields.get("division");
+    const chairRef = form.inputFields.get("chair");
+	const deanRef = form.inputFields.get("dean");
+    const locRef = form.inputFields.get("loc");
+	const penRef = form.inputFields.get("pen");
+
+    /*
+    console.log("Selected Division:", selectedDivision);
+    console.log("Selected Division Length:", selectedDivision.length);
+    */
+
+	let selectedDivision = divisionSelect.value.trim();
+
+	// --- Input Validation ---
+	let isValid = true;
+
+	// Validate each input field
+    if (chairRef.value.trim() === "") {
+		isValid = false;
+		document.getElementById("err-chair").style.display = "inline";
+	} else {
+		document.getElementById("err-chair").style.display = "none";
+	}
+
+	if (deanRef.value.trim() === "") {
+		isValid = false;
+		document.getElementById("err-dean").style.display = "inline";
+	} else {
+		document.getElementById("err-dean").style.display = "none";
+	}
+
+    if (locRef.value.trim() === "") {
+		isValid = false;
+		document.getElementById("err-loc").style.display = "inline";
+	} else {
+		document.getElementById("err-loc").style.display = "none";
+	}
+
+	if (penRef.value.trim() === "") {
+		isValid = false;
+		document.getElementById("err-pen").style.display = "inline";
+	} else {
+		document.getElementById("err-pen").style.display = "none";
+	}
+
+	// If not valid, exit
+	if (!isValid) {
+		return;
+	}
+
+	// If valid, continue saving edits
+
+
+	// Update department data
+	form.departments.forEach((dept) => {
+		if (dept.getDivName() === selectedDivision) {
+            dept.setChairName(chairRef.value);
+			dept.setDeanName(deanRef.value);
+            dept.setLocRep(locRef.value);
+			dept.setPenContact(penRef.value);
+		}
+	});
+}
+
+function clearInputs() {
+	form.fieldsArr.forEach((el) => (el.value = ""));
 }
