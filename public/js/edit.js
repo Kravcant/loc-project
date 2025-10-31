@@ -141,7 +141,14 @@ function saveEdits() {
     console.log("Selected Division Length:", selectedDivision.length);
     */
 
+    /*
 	let selectedDivision = divisionSelect.value.trim();
+    */
+
+    const selectedDivision = divisionSelect.value.trim();
+    console.log("🔍 Save clicked");
+    console.log("Selected Division:", selectedDivision);
+    console.log("All divisions:", form.departments.map(d => d.getDivName()));
 
 	// --- Input Validation ---
 	let isValid = true;
@@ -182,7 +189,16 @@ function saveEdits() {
 
 	// If valid, continue saving edits
 
-
+    /*
+    const dept = form.departments.find(
+        (d) => {
+            const divName = d.getDivName();
+            console.log(`Comparing "${divName}" with "${selectedDivision}"`);
+            return divName && divName === selectedDivision;
+        }
+    );
+    */
+    
 	// Update department data
 	form.departments.forEach((dept) => {
 		if (dept.getDivName() === selectedDivision) {
