@@ -11,13 +11,12 @@ const form = {
         ["pen", document.getElementById("pen-input")],
 	]),
 	fieldsArr: document.querySelectorAll(".input-fields"),
-    /*
 	btns: new Map([
 		["save", document.getElementById("save-btn")],
 		["cancel", document.getElementById("cancel-btn")],
 	]),
-    */
 	departments: [
+        /*
         new Department(
 			"",
             [""],
@@ -26,6 +25,7 @@ const form = {
             "",
 			""
 		),
+        */
 		new Department(
 			"Fine Arts",
             ["Music"],
@@ -53,3 +53,56 @@ const form = {
 	],
 };
 
+// Initialize the dropdown code
+populateDepartmentDropdown();
+addEventListeners();
+form.ref.addEventListener("submit", function (event) {
+	event.preventDefault(); // Prevent form from actually submitting
+});
+
+// Function to populate the dropdowns
+function populateDepartmentDropdown() {
+	const divisionSelect = form.inputFields.get("division");
+
+	form.departments.forEach((dept) => {
+		const option = document.createElement("option");
+		option.value = dept.getDivName();
+		option.textContent = dept.getDivName();
+		divisionSelect.appendChild(option);
+	});
+}
+
+// Function to add event listners for everything inside the form
+function addEventListeners() {
+	const divisionSelect = form.inputFields.get("division");
+	const saveBtn = form.btns.get("save");
+	const cancelBtn = form.btns.get("cancel");
+
+	divisionSelect.addEventListener("change", handleDivisionChange);
+	saveBtn.addEventListener("click", saveEdits);
+	cancelBtn.addEventListener("click", cancelEdits);
+}
+
+// Event handlers
+function handleDivisionChange() {
+	const divisionSelect = form.inputFields.get("division");
+	const selectedDivision = divisionSelect.value;
+
+	if (selectedDivision === "default") {
+		clearInputs(); // Call in case there is something in the inputs
+		return;
+	}
+
+	// Lookup and store the department reference that matches our select value
+	const dept = form.departments.find(
+		(d) => d.getDivName() === selectedDivision
+	);
+
+	// If we found a match, then fill the fields with the correct info for the dept.
+	if (dept) {
+        form.inputFields.get("chair").value = dept.getChairName();
+		form.inputFields.get("dean").value = dept.getDeanName();
+        form.inputFields.get("loc").value = dept.getLocRep();
+		form.inputFields.get("pen").value = dept.getPenContact();
+	}
+}

@@ -5,6 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Edit Sheet</title>
 		<link rel="stylesheet" href="styles/styles.css" />
+		<script type="module" src="js/department.js" defer></script>
+		<script type="module" src="js/edit.js" defer></script>
 	</head>
 	<body>
 		<header>
@@ -20,16 +22,6 @@
 					<label for="division">Division</label>
 					<select id="division" name="division">
 						<option value="default">Select a Division...</option>
-						<option value="fine-arts">Fine Arts</option>
-						<option value="humanities">Humanities</option>
-						<option value="social-science">Social Science</option>
-						<option value="english">English</option>
-						<option value="science">Science</option>
-						<option value="ble">Business, Law, & Education</option>
-						<option value="technology">Technology</option>
-						<option value="health-science">Health Science</option>
-						<option value="trades">Trades</option>
-						<option value="transitional-studies">Transitional Studies</option>
 					</select>
 				</fieldset>
 				<legend>Programs</legend>
@@ -49,7 +41,6 @@
 						id="chair-input"
 						name="chair-input"
 						class="input-fields"
-                        value="Dr. Sarah Mitchell"
 					/>
 					<label for="dean-input">Dean: </label>
 					<input
@@ -57,7 +48,6 @@
 						id="dean-input"
 						name="dean-input"
 						class="input-fields"
-                        value="Dr. Robert Chen"
 					/>
 					<label for="loc-input">LOC Representative: </label>
 					<input
@@ -65,7 +55,6 @@
 						id="loc-input"
 						name="loc-input"
 						class="input-fields"
-                        value="Michael Thompson"
 					/>
 					<label for="pen-input">PEN Contact: </label>
 					<input
@@ -73,9 +62,10 @@
 						id="pen-input"
 						name="pen-input"
 						class="input-fields"
-                        value="Jennifer Rodriguez"
 					/>
 				</fieldset>
+				<button id="save-btn" class="button" type="submit">Save</button>
+				<button id="cancel-btn" class="button" type="button">Cancel</button>
 			</form>
 			<iframe
 				src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSqZrRLG3J2QtDEOqSopkjmPhjw40or4dWBA602wDfu1ZM_GfLvIXuLoiVjpA1sN9lE2OTGLT5k_dyv/pubhtml?gid=1432938532&amp;single=true&amp;widget=true&amp;headers=false"
