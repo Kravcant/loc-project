@@ -7,7 +7,7 @@
 		<link rel="stylesheet" href="styles/styles.css" />
 		<link rel="stylesheet" href="styles/edit.css" />
 		<script type="module" src="js/department.js" defer></script>
-		<script type="module" src="js/edit.js" defer></script>
+		<script type="module" src="js/new-edit.js" defer></script>
 		<script type="module" src="js/script.js" defer></script>
 	</head>
 	<body>
@@ -18,7 +18,28 @@
 			</nav>
 		</header>
 		<main>
-			<form id="page-container" action="" method="get"></form>
+			<form id="page-form" class="content-container" action="" method="get">
+				<!-- Fieldset for division selector -->
+				<fieldset id="div-select-set" class="fieldset">
+					<label for="division-select">Choose a Division</label>
+					<select name="division" id="division-select">
+						<option value="">-- Select division --</option>
+					</select>
+				</fieldset>
+
+				<!-- Title for contact information set -->
+				<section id="contact-title">
+					<h1>Contact Info</h1>
+				</section>
+
+				<!-- Fieldset for contact information -->
+				<fieldset id="contact-set" class="fieldset"></fieldset>
+
+				<!-- Fieldset for programs information -->
+				<fieldset id="x-program" class="program">
+					<legend class="p-title">Fine Arts</legend>
+				</fieldset>
+			</form>
 		</main>
 	</body>
 </html>
