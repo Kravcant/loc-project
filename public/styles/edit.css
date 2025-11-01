@@ -1,4 +1,14 @@
-.error {
-    color: red;
-    display: none;
+/* ===============================
+   Page Layout
+================================*/
+body {
+	display: grid;
+	grid-template-rows: 10% 90%; /* Header 10%, main content 90% */
+	height: 100vh;
+	max-height: 100vh;
+}
+
+main {
+	padding: 3rem;
+	height: 100%;
 }

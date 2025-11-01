@@ -1,11 +1,11 @@
 export class Department {
 	// Class constructor
-	constructor(division, program, chair, dean, locRep, pen) {
+	constructor(division, programs, chair, dean, locRep, pen) {
 		this.divisionName = division;
-        this.programList = program;
-        this.chairName = chair;
+		this.programList = programs;
+		this.chairName = chair;
 		this.deanName = dean;
-        this.locRep = locRep;
+		this.locRep = locRep;
 		this.penContact = pen;
 	}
 
@@ -14,11 +14,11 @@ export class Department {
 		return this.divisionName;
 	}
 
-    getProgramName() {
+	getProgramNames() {
 		return this.programList;
 	}
 
-    getChairName() {
+	getChairName() {
 		return this.chairName;
 	}
 
@@ -26,7 +26,7 @@ export class Department {
 		return this.deanName;
 	}
 
-    getLocRep() {
+	getLocRep() {
 		return this.locRep;
 	}
 
@@ -39,11 +39,11 @@ export class Department {
 		this.divisionName = division;
 	}
 
-    setDivName(program) {
+	setDivName(program) {
 		this.programList = program;
 	}
 
-    setChairName(chair) {
+	setChairName(chair) {
 		this.chairName = chair;
 	}
 
@@ -51,7 +51,7 @@ export class Department {
 		this.deanName = dean;
 	}
 
-    setLocRep(locRep) {
+	setLocRep(locRep) {
 		this.locRep = locRep;
 	}
 

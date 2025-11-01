@@ -8,6 +8,7 @@
 		<link rel="stylesheet" href="styles/edit.css" />
 		<script type="module" src="js/department.js" defer></script>
 		<script type="module" src="js/edit.js" defer></script>
+		<script type="module" src="js/script.js" defer></script>
 	</head>
 	<body>
 		<header>
@@ -17,72 +18,7 @@
 			</nav>
 		</header>
 		<main>
-			<h1>Edit Sheet</h1>
-			<form id="form" action="#"  method="get">
-				<fieldset>
-					<label for="division">Division</label>
-					<select id="division" name="division">
-						<option value="default">Select a Division...</option>
-					</select>
-				</fieldset>
-				<legend>Programs</legend>
-				<section class="programs">
-					<p>
-						<div class="div-card">Anthropology</div>
-                        <div class="div-card">History</div>
-                        <div class="div-card">Political Science</div>
-                        <div class="div-card">Psychology</div>
-					</p>
-				</section>
-				<fieldset>
-					<legend>Contacts</legend>
-					<label for="chair-input">Chair: </label>
-					<input
-						type="text"
-						id="chair-input"
-						name="chair-input"
-						class="input-fields"
-					/>
-					<span class="error" id="err-chair"
-						>Please input a name for Chair</span
-					>
-					<label for="dean-input">Dean: </label>
-					<input
-						type="text"
-						id="dean-input"
-						name="dean-input"
-						class="input-fields"
-					/>
-					<span class="error" id="err-dean"
-					>Please input a name Dean name</span
-					>
-					<label for="loc-input">LOC Representative: </label>
-					<input
-						type="text"
-						id="loc-input"
-						name="loc-input"
-						class="input-fields"
-					/>
-					<span class="error" id="err-chair"
-						>Please input a name for Chair</span
-					>
-					<label for="pen-input">PEN Contact: </label>
-					<input
-						type="text"
-						id="pen-input"
-						name="pen-input"
-						class="input-fields"
-					/>
-					<span class="error" id="err-pen"
-						>Please input a name for PEN Contact</span
-					>
-				</fieldset>
-				<button id="save-btn" class="button" type="submit">Save</button>
-				<button id="cancel-btn" class="button" type="button">Cancel</button>
-			</form>
-			<iframe
-				src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSqZrRLG3J2QtDEOqSopkjmPhjw40or4dWBA602wDfu1ZM_GfLvIXuLoiVjpA1sN9lE2OTGLT5k_dyv/pubhtml?gid=1432938532&amp;single=true&amp;widget=true&amp;headers=false"
-			></iframe>
+			<form id="page-container" action="" method="get"></form>
 		</main>
 	</body>
 </html>

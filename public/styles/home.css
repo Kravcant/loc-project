@@ -79,7 +79,6 @@ main {
 	text-align: center;
 	background-color: var(--background-color);
 	box-shadow: var(--box-shadow-light);
-	min-height: 200px;
 	height: 100%;
 }
 
@@ -148,6 +147,43 @@ main {
 	width: 100%;
 	border-collapse: collapse;
 	white-space: nowrap; /* prevents columns from wrapping */
+}
+
+/* Contacts inside division card */
+.card-contacts {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding: var(--padding-small);
+	background-color: var(--background-color);
+	box-shadow: var(--box-shadow-light);
+	border-radius: var(--border-radius);
+	margin: 0.5rem;
+	color: var(--primary-color);
+	text-align: left;
+}
+
+/* Individual program cards inside division card */
+.programs-container {
+	display: flex;
+	flex-direction: column;
+	gap: var(--gap-small);
+	padding: var(--padding-small);
+}
+
+.program-card {
+	background-color: var(--background-color);
+	box-shadow: var(--box-shadow-light);
+	padding: var(--padding-small);
+	border-radius: var(--border-radius);
+	color: var(--primary-color);
+	text-align: center;
+	font-size: small;
+	transition: background-color 0.15s ease-in-out;
+}
+
+.program-card:hover {
+	background-color: var(--hover-color);
 }
 
 @media (max-width: 1600px) {
