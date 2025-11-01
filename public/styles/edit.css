@@ -73,6 +73,17 @@ section,
 	flex-direction: column;
 	gap: var(--gap-small);
 }
+.program-money-section {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: var(--gap-small);
+}
+.program-money-section div {
+	display: flex;
+	flex-direction: row;
+	gap: var(--gap-small);
+}
 
 /* Selector section */
 #div-select-set {
