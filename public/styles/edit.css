@@ -38,12 +38,12 @@ section,
 .content-container {
 	display: grid;
 	grid-template-areas:
-		"selector ctitle"
-		"programs contact"
-		"programs actions";
-	grid-template-columns: 75% 25%;
-	grid-template-rows: 5% 80% 15%;
-	height: 100%;
+		"selector"
+		"programs";
+	height: fit-content;
+	overflow: auto;
+	max-height: 100%;
+	box-shadow: var(--box-shadow-light);
 }
 
 /* Base Classes */
@@ -53,7 +53,6 @@ section,
 }
 .program {
 	height: fit-content;
-	width: fit-content;
 }
 .p-title {
 	color: var(--primary-color);
@@ -84,37 +83,35 @@ section,
 	flex-direction: row;
 	gap: var(--gap-small);
 }
+.error {
+	display: none;
+}
+.buttons-container {
+	display: flex;
+	flex-direction: row;
+	gap: var(--gap-small);
+}
 
 /* Selector section */
 #div-select-set {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
+	flex-wrap: wrap;
 	gap: var(--gap-small);
 	grid-area: selector;
 }
 
-/* Contact title section */
-#contact-title {
+#div-select-set div {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 0;
-	height: 100%;
-	background-color: var(--primary-color);
-	color: var(--text-color);
-}
-
-/* Contact set */
-#contact-set {
-	grid-area: contact;
 }
 
 /* Programs set */
 #programs-container {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
+	gap: var(--gap-medium);
 	overflow: auto;
 	grid-area: programs;
 }
