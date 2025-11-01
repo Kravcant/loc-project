@@ -15,7 +15,14 @@ main {
 
 /* Text area styles */
 textarea {
-	resize: vertical;
+	resize: none;
+	height: 5rem;
+	padding: var(--padding-small);
+}
+
+/* Input styles */
+input {
+	padding: 0.35rem 0.25rem;
 }
 
 /* Container styles */
@@ -57,6 +64,15 @@ section,
 	box-shadow: var(--box-shadow-light);
 	padding: var(--padding-medium);
 }
+.program-notes-section {
+	display: flex;
+	flex-direction: column;
+}
+.payee-container {
+	display: flex;
+	flex-direction: column;
+	gap: var(--gap-small);
+}
 
 /* Selector section */
 #div-select-set {
@@ -87,11 +103,12 @@ section,
 /* Programs set */
 #programs-container {
 	display: grid;
-	grid-template-columns: repeat(2, 1fr);
+	grid-template-columns: repeat(3, 1fr);
+	overflow: auto;
 	grid-area: programs;
 }
 
-#x-program-notes-section {
-	display: flex;
-	flex-direction: column;
+.program-payee-input-section {
+	display: grid;
+	grid-template-columns: 85% 15%;
 }

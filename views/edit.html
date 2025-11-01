@@ -45,7 +45,10 @@
 							class="payee-container program-sections"
 						>
 							<label for="x-program-payee-1">Payee #1</label>
-							<div>
+							<div
+								id="x-program-payee-input-section"
+								class="program-payee-input-section"
+							>
 								<input
 									type="text"
 									name="x-program-payee-1"
@@ -59,8 +62,10 @@
 							</div>
 
 							<!-- Buttons to add/remove payees -->
-							<button>Add</button>
-							<button>Remove</button>
+							<div>
+								<button>Add</button>
+								<button>Remove</button>
+							</div>
 						</section>
 
 						<!-- Fieldset for money -->
@@ -80,7 +85,10 @@
 						</fieldset>
 
 						<!-- Fieldset for notes -->
-						<fieldset id="x-program-notes-section">
+						<fieldset
+							id="x-program-notes-section"
+							class="program-notes-section"
+						>
 							<label for="x-program-notes">Notes </label>
 							<textarea name="x-program-notes" id="x-program-notes"></textarea>
 						</fieldset>
