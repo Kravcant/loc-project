@@ -2,302 +2,343 @@ import { Department } from "./department.js";
 import { Program } from "./program.js";
 import { data } from "./data.js";
 
-const form = {
-	ref: document.getElementById("form"),
-	inputFields: new Map([
-		["division", document.getElementById("division")],
-		["programs", document.getElementById("programs")],
-		["chair", document.getElementById("chair-input")],
-		["dean", document.getElementById("dean-input")],
-		["loc", document.getElementById("loc-input")],
-		["pen", document.getElementById("pen-input")],
-	]),
-	fieldsArr: document.querySelectorAll(".input-fields"),
-	btns: new Map([
-		["save", document.getElementById("save-btn")],
-		["cancel", document.getElementById("cancel-btn")],
-	]),
-	departments: [
-		/*
-        new Department(
-			"",
-            [""],
-            "",
-			"",
-            "",
-			""
-		),
-        */
-		new Department(
-			"Fine Arts",
-			["Music"],
-			"Paul Metevier",
-			"Christie Gilliland",
-			"Monica Bowen",
-			"Liz Peterson"
-		),
-		new Department(
-			"Humanities",
-			["Communication Studies"],
-			"Katie Cunnion",
-			"Jamie Fitzgerald",
-			"Lisa Luengo",
-			"Liz Peterson"
-		),
-		new Department(
-			"Social Science",
-			["Anthropology", "History", "Political Science", "Psycology"],
-			"Mark Thomason",
-			"Christie Gilliland",
-			"Joy Crawford",
-			"Liz Peterson"
-		),
-	],
+// ============================
+// Global References
+// ============================
+const pForm = {
+	ref: document.getElementById("page-form"),
+
+	selectFieldset: {
+		ref: document.getElementById("div-select-set"),
+		divisionSelector: document.getElementById("division-select"),
+
+		deanRef: document.getElementById("dean-input"),
+		deanErrRef: document.getElementById("err-dean"),
+
+		penRef: document.getElementById("pen-input"),
+		penErrRef: document.getElementById("err-pen"),
+
+		locRef: document.getElementById("loc-input"),
+		locErrRef: document.getElementById("err-loc"),
+
+		chairRef: document.getElementById("chair-input"),
+		chairErrRef: document.getElementById("err-chair"),
+	},
+
+	programsFieldset: {
+		ref: document.getElementById("programs-container"),
+	},
 };
 
-// Initialize the dropdown code
-populateDepartmentDropdown();
-addEventListeners();
-form.ref.addEventListener("submit", function (event) {
-	event.preventDefault(); // Prevent form from actually submitting
-});
+let selectedDivision = data.departments[0];
 
-// Function to populate the dropdowns
-function populateDepartmentDropdown() {
-	const divisionSelect = form.inputFields.get("division");
-
-	form.departments.forEach((dept) => {
-		const option = document.createElement("option");
-		option.value = dept.getDivName();
-		option.textContent = dept.getDivName();
-		divisionSelect.appendChild(option);
+// ============================
+// Division Selector Population
+// ============================
+function fillDivisionSelector() {
+	const divSelector = pForm.selectFieldset.divisionSelector;
+	data.departments.forEach((dep) => {
+		const opt = document.createElement("option");
+		opt.value = dep.divisionName;
+		opt.textContent = dep.divisionName;
+		divSelector.appendChild(opt);
 	});
-
-	/*
-    // Find and update the department
-    const dept = form.departments.find(
-        (d) => d.getDivName() === divisionSelect.value
-    );
-
-    if (!dept) {
-        alert("Department not found!");
-        return; // ← This is the important return!
-    }
-
-    // Update department data
-    dept.setChairName(chairRef.value.trim());
-    dept.setDeanName(deanRef.value.trim());
-    dept.setLocRep(locRef.value.trim());
-    dept.setPenContact(penRef.value.trim());
-    */
 }
 
-// new-edit.js or add to existing script file
-document.addEventListener("DOMContentLoaded", function () {
-	// Event delegation for Add and Remove buttons
-	document.addEventListener("click", function (e) {
-		const button = e.target;
+// ============================
+// Program Cards Handling
+// ============================
+function clearProgramCards() {
+	pForm.programsFieldset.ref.innerHTML = "";
+}
 
-		// Check if Add button was clicked
-		if (button.textContent === "Add" && button.closest(".payee-container")) {
-			e.preventDefault();
-			addPayee(button);
+function createProgramCards(selectedDivision) {
+	const parent = pForm.programsFieldset.ref;
+	clearProgramCards();
+	if (!selectedDivision) return;
+
+	selectedDivision.programList.forEach((pro) => {
+		const fieldsetRef = document.createElement("fieldset");
+		fieldsetRef.id = `${pro.programName.toLowerCase()}-program`;
+		fieldsetRef.classList.add("program");
+
+		// Title
+		const programTitleRef = document.createElement("p");
+		programTitleRef.classList.add("p-title");
+		programTitleRef.textContent = pro.programName;
+		fieldsetRef.appendChild(programTitleRef);
+
+		// Payee Section
+		const payeeSection = document.createElement("section");
+		payeeSection.id = `${pro.programName.toLowerCase()}-program-payee-container`;
+		payeeSection.classList.add("payee-container", "program-sections");
+
+		let payeeNumber = 1;
+		for (const [payeeName, payeeAmount] of Object.entries(pro.payees)) {
+			const payeeDiv = createPayeeDiv(
+				pro.programName,
+				payeeNumber,
+				payeeName,
+				payeeAmount,
+				fieldsetRef
+			);
+			payeeSection.appendChild(payeeDiv);
+			payeeNumber++;
 		}
 
-		// Check if Remove button was clicked
-		if (button.textContent === "Remove" && button.closest(".payee-container")) {
-			e.preventDefault();
-			removePayee(button);
+		// Add Payee Button
+		const addPayeeDiv = document.createElement("div");
+		const addPayeeBtn = document.createElement("button");
+		addPayeeBtn.type = "button";
+		addPayeeBtn.textContent = "Add";
+		addPayeeBtn.addEventListener("click", () =>
+			addPayee(payeeSection, pro.programName, fieldsetRef)
+		);
+		addPayeeDiv.appendChild(addPayeeBtn);
+		payeeSection.appendChild(addPayeeDiv);
+
+		fieldsetRef.appendChild(payeeSection);
+
+		// Paid Section
+		const moneyFieldset = document.createElement("fieldset");
+		moneyFieldset.classList.add("program-money-section");
+
+		const paidDiv = document.createElement("div");
+		const paidLabel = document.createElement("label");
+		paidLabel.htmlFor = `${pro.programName.toLowerCase()}-paid`;
+		paidLabel.textContent = "Has been paid";
+
+		const paidInput = document.createElement("input");
+		paidInput.type = "checkbox";
+		paidInput.id = `${pro.programName.toLowerCase()}-paid`;
+		paidInput.checked = pro.hasBeenPaid;
+		paidInput.addEventListener("change", () => showSubmitChanges(fieldsetRef));
+
+		paidDiv.append(paidLabel, paidInput);
+		moneyFieldset.appendChild(paidDiv);
+		fieldsetRef.appendChild(moneyFieldset);
+
+		// Notes Section
+		const notesFieldset = document.createElement("fieldset");
+		notesFieldset.classList.add("program-notes-section");
+
+		const notesLabel = document.createElement("label");
+		notesLabel.htmlFor = `${pro.programName.toLowerCase()}-notes`;
+		notesLabel.textContent = "Notes";
+
+		const notesTextarea = document.createElement("textarea");
+		notesTextarea.id = `${pro.programName.toLowerCase()}-notes`;
+		notesTextarea.value = pro.notes || "";
+		notesTextarea.addEventListener("input", () =>
+			showSubmitChanges(fieldsetRef)
+		);
+
+		notesFieldset.append(notesLabel, notesTextarea);
+		fieldsetRef.appendChild(notesFieldset);
+
+		// Submit Changes Button
+		const btnContainer = document.createElement("div");
+		btnContainer.classList.add("program-buttons");
+
+		const submitChangesBtn = document.createElement("button");
+		submitChangesBtn.type = "button";
+		submitChangesBtn.classList.add("button");
+		submitChangesBtn.textContent = "Submit Changes";
+		submitChangesBtn.style.display = "none"; // hidden by default
+
+		submitChangesBtn.addEventListener("click", () => {
+			saveProgram(selectedDivision, pro.programName);
+			submitChangesBtn.style.display = "none";
+		});
+
+		btnContainer.appendChild(submitChangesBtn);
+		fieldsetRef.appendChild(btnContainer);
+
+		// Track changes for inputs
+		fieldsetRef
+			.querySelectorAll("input[type=text], input[type=number]")
+			.forEach((el) => {
+				el.addEventListener("input", () => showSubmitChanges(fieldsetRef));
+			});
+
+		parent.appendChild(fieldsetRef);
+	});
+}
+
+// ============================
+// Payee Handling
+// ============================
+function createPayeeDiv(
+	programName,
+	payeeNumber,
+	payeeName,
+	payeeAmount,
+	fieldsetRef
+) {
+	const payeeDiv = document.createElement("div");
+	payeeDiv.classList.add("payee-item");
+	payeeDiv.dataset.payeeNumber = payeeNumber;
+
+	const label = document.createElement("label");
+	label.htmlFor = `${programName.toLowerCase()}-payee-${payeeNumber}`;
+	label.textContent = `Payee #${payeeNumber}`;
+
+	const inputSection = document.createElement("div");
+	inputSection.classList.add("program-payee-input-section");
+
+	const nameInput = document.createElement("input");
+	nameInput.type = "text";
+	nameInput.id = `${programName.toLowerCase()}-payee-${payeeNumber}`;
+	nameInput.value = payeeName;
+
+	const moneyInput = document.createElement("input");
+	moneyInput.type = "number";
+	moneyInput.id = `${programName.toLowerCase()}-payee-${payeeNumber}-money`;
+	moneyInput.value = payeeAmount;
+
+	nameInput.addEventListener("input", () => showSubmitChanges(fieldsetRef));
+	moneyInput.addEventListener("input", () => showSubmitChanges(fieldsetRef));
+
+	inputSection.append(nameInput, moneyInput);
+
+	const removeBtn = document.createElement("button");
+	removeBtn.type = "button";
+	removeBtn.textContent = "Remove";
+	removeBtn.addEventListener("click", () => {
+		payeeDiv.remove();
+		renumberPayees(fieldsetRef);
+		showSubmitChanges(fieldsetRef);
+	});
+
+	inputSection.appendChild(removeBtn);
+	payeeDiv.append(label, inputSection);
+
+	return payeeDiv;
+}
+
+function addPayee(payeeSection, programName, fieldsetRef) {
+	const payeeNumber = payeeSection.querySelectorAll(".payee-item").length + 1;
+	const payeeDiv = createPayeeDiv(programName, payeeNumber, "", 0, fieldsetRef);
+	const addBtnDiv = payeeSection.querySelector("div:last-child");
+	payeeSection.insertBefore(payeeDiv, addBtnDiv);
+
+	showSubmitChanges(fieldsetRef);
+}
+
+function renumberPayees(fieldsetRef) {
+	const payees = fieldsetRef.querySelectorAll(".payee-item");
+	payees.forEach((payeeDiv, index) => {
+		const newNumber = index + 1;
+		payeeDiv.dataset.payeeNumber = newNumber;
+		const label = payeeDiv.querySelector("label");
+		label.textContent = `Payee #${newNumber}`;
+		const nameInput = payeeDiv.querySelector("input[type=text]");
+		const moneyInput = payeeDiv.querySelector("input[type=number]");
+		nameInput.id = `${fieldsetRef.id}-payee-${newNumber}`;
+		moneyInput.id = `${fieldsetRef.id}-payee-${newNumber}-money`;
+	});
+}
+
+// ============================
+// Submit Changes Visibility
+// ============================
+function showSubmitChanges(fieldsetRef) {
+	const submitBtn = fieldsetRef.querySelector(".button");
+	submitBtn.style.display = "inline-block";
+}
+
+// ============================
+// Save Program Functionality
+// ============================
+function saveProgram(department, programName) {
+	const program = department.programList.find(
+		(p) => p.programName === programName
+	);
+	if (!program) return;
+
+	const programCard = document.getElementById(
+		`${programName.toLowerCase()}-program`
+	);
+
+	// Update payees
+	const payeeItems = programCard.querySelectorAll(".payee-item");
+	program.payees = {};
+	payeeItems.forEach((item) => {
+		const nameInput = item.querySelector("input[type=text]");
+		const moneyInput = item.querySelector("input[type=number]");
+		if (nameInput.value.trim()) {
+			program.payees[nameInput.value.trim()] =
+				parseFloat(moneyInput.value) || 0;
 		}
 	});
 
-	function addPayee(button) {
-		// Find the payee container
-		const payeeContainer = button.closest(".payee-container");
-		const programId = payeeContainer.id.replace("-payee-container", "");
+	// Update paid status
+	program.hasBeenPaid = programCard.querySelector(
+		`#${programName.toLowerCase()}-paid`
+	).checked;
 
-		console.log("Program ID:", programId); // Add this line
+	// Update notes
+	program.notes = programCard.querySelector(
+		`#${programName.toLowerCase()}-notes`
+	).value;
 
-		// Count existing payees
-		const existingPayees = payeeContainer.querySelectorAll(
-			'label[for*="payee"]'
-		);
-		const newPayeeNumber = existingPayees.length + 1;
-
-		// Create new payee section
-		const newPayeeLabel = document.createElement("label");
-		newPayeeLabel.setAttribute("for", `${programId}-payee-${newPayeeNumber}`);
-		newPayeeLabel.textContent = `Payee #${newPayeeNumber}`;
-
-		const newInputSection = document.createElement("div");
-		newInputSection.className = "program-payee-input-section";
-		newInputSection.innerHTML = `
-            <input
-                type="text"
-                name="${programId}-payee-${newPayeeNumber}"
-                id="${programId}-payee-${newPayeeNumber}"
-                placeholder="John Smith"
-            />
-            <input
-                type="number"
-                name="${programId}-payee-${newPayeeNumber}-money"
-                id="${programId}-payee-${newPayeeNumber}-money"
-                placeholder="Amount"
-                step="0.01"
-            />
-        `;
-
-		// Insert before the button container
-		const buttonContainer = payeeContainer.querySelector("div:last-child");
-		payeeContainer.insertBefore(newPayeeLabel, buttonContainer);
-		payeeContainer.insertBefore(newInputSection, buttonContainer);
-	}
-
-	function removePayee(button) {
-		const payeeContainer = button.closest(".payee-container");
-		const payeeLabels = payeeContainer.querySelectorAll('label[for*="payee"]');
-
-		// Don't remove if only one payee exists
-		if (payeeLabels.length <= 1) {
-			alert("You must have at least one payee.");
-			return;
-		}
-
-		// Remove the last payee (label and input section)
-		const lastLabel = payeeLabels[payeeLabels.length - 1];
-		const inputSections = payeeContainer.querySelectorAll(
-			".program-payee-input-section"
-		);
-		const lastInputSection = inputSections[inputSections.length - 1];
-
-		lastLabel.remove();
-		lastInputSection.remove();
-	}
-});
-
-// Function to add event listners for everything inside the form
-function addEventListeners() {
-	const divisionSelect = form.inputFields.get("division");
-	const saveBtn = form.btns.get("save");
-	const cancelBtn = form.btns.get("cancel");
-
-	divisionSelect.addEventListener("change", handleDivisionChange);
-	saveBtn.addEventListener("click", saveEdits);
-	/*
-	cancelBtn.addEventListener("click", cancelEdits);
-    */
+	alert(`Program "${programName}" changes saved successfully!`);
 }
 
-// Event handlers
-function handleDivisionChange() {
-	const divisionSelect = form.inputFields.get("division");
-	const selectedDivision = divisionSelect.value;
+// ============================
+// Contact Info Update
+// ============================
+function toggleEnabled(toggle, elements) {
+	elements.forEach((el) => (el.disabled = !toggle));
+}
 
-	if (selectedDivision === "default") {
-		clearInputs(); // Call in case there is something in the inputs
+function updateContactInfo(depName) {
+	const fields = pForm.selectFieldset;
+
+	if (!depName) {
+		fields.deanRef.value = "";
+		fields.penRef.value = "";
+		fields.locRef.value = "";
+		fields.chairRef.value = "";
+
+		toggleEnabled(false, [
+			fields.deanRef,
+			fields.penRef,
+			fields.locRef,
+			fields.chairRef,
+		]);
 		return;
 	}
 
-	// Lookup and store the department reference that matches our select value
-	const dept = form.departments.find(
-		(d) => d.getDivName() === selectedDivision
-	);
+	const dept = data.departments.find((d) => d.divisionName === depName);
+	selectedDivision = dept;
+	if (!dept) return;
 
-	// If we found a match, then fill the fields with the correct info for the dept.
-	if (dept) {
-		form.inputFields.get("chair").value = dept.getChairName();
-		form.inputFields.get("dean").value = dept.getDeanName();
-		form.inputFields.get("loc").value = dept.getLocRep();
-		form.inputFields.get("pen").value = dept.getPenContact();
-	}
+	fields.deanRef.value = dept.deanName;
+	fields.penRef.value = dept.penContact;
+	fields.locRef.value = dept.locRep;
+	fields.chairRef.value = dept.chairName;
+
+	toggleEnabled(true, [
+		fields.deanRef,
+		fields.penRef,
+		fields.locRef,
+		fields.chairRef,
+	]);
 }
 
-// Function to save the edits, this will be called on clicked
-function saveEdits() {
-	// Get all input fields from the form map
-	const divisionSelect = form.inputFields.get("division");
-	const chairRef = form.inputFields.get("chair");
-	const deanRef = form.inputFields.get("dean");
-	const locRef = form.inputFields.get("loc");
-	const penRef = form.inputFields.get("pen");
-
-	/*
-    console.log("Selected Division:", selectedDivision);
-    console.log("Selected Division Length:", selectedDivision.length);
-    */
-
-	/*
-	let selectedDivision = divisionSelect.value.trim();
-    */
-
-	const selectedDivision = divisionSelect.value.trim();
-	console.log("🔍 Save clicked");
-	console.log("Selected Division:", selectedDivision);
-	console.log(
-		"All divisions:",
-		form.departments.map((d) => d.getDivName())
-	);
-
-	// --- Input Validation ---
-	let isValid = true;
-
-	// Validate each input field
-	if (chairRef.value.trim() === "") {
-		isValid = false;
-		document.getElementById("err-chair").style.display = "inline";
-	} else {
-		document.getElementById("err-chair").style.display = "none";
-	}
-
-	if (deanRef.value.trim() === "") {
-		isValid = false;
-		document.getElementById("err-dean").style.display = "inline";
-	} else {
-		document.getElementById("err-dean").style.display = "none";
-	}
-
-	if (locRef.value.trim() === "") {
-		isValid = false;
-		document.getElementById("err-loc").style.display = "inline";
-	} else {
-		document.getElementById("err-loc").style.display = "none";
-	}
-
-	if (penRef.value.trim() === "") {
-		isValid = false;
-		document.getElementById("err-pen").style.display = "inline";
-	} else {
-		document.getElementById("err-pen").style.display = "none";
-	}
-
-	// If not valid, exit
-	if (!isValid) {
-		return;
-	}
-
-	// If valid, continue saving edits
-
-	/*
-    const dept = form.departments.find(
-        (d) => {
-            const divName = d.getDivName();
-            console.log(`Comparing "${divName}" with "${selectedDivision}"`);
-            return divName && divName === selectedDivision;
-        }
-    );
-    */
-
-	// Update department data
-	form.departments.forEach((dept) => {
-		if (dept.getDivName() === selectedDivision) {
-			dept.setChairName(chairRef.value);
-			dept.setDeanName(deanRef.value);
-			dept.setLocRep(locRef.value);
-			dept.setPenContact(penRef.value);
-		}
-	});
+function updateProgramCards(depName) {
+	const dept = data.departments.find((d) => d.divisionName === depName);
+	createProgramCards(dept);
 }
 
-function clearInputs() {
-	form.fieldsArr.forEach((el) => (el.value = ""));
-}
+// ============================
+// Initialization
+// ============================
+fillDivisionSelector();
+clearProgramCards();
+
+pForm.selectFieldset.divisionSelector.addEventListener("change", function () {
+	updateContactInfo(this.value);
+	updateProgramCards(this.value);
+});

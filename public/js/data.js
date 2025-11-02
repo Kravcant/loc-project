@@ -25,7 +25,7 @@ export const data = {
 			"Humanities",
 			[
 				new Program(
-					"Communication Studies",
+					"Communication-Studies",
 					{ Madeleine: 500, "Joy Crawford": 500 },
 					true,
 					new Date("2025-05-02"),
@@ -59,7 +59,7 @@ export const data = {
 					"Project in progress"
 				),
 				new Program(
-					"Political Science",
+					"Political-Science",
 					{ "Aley Martin": 250, "Claire Scalede": 250, "Ericka Nelson": 250 },
 					false,
 					new Date("2025-05-02"),
@@ -103,7 +103,7 @@ export const data = {
 			"Science",
 			[
 				new Program(
-					"Anatomy and Physiology",
+					"Anatomy-and-Physiology",
 					{ "Leo Studach": 400, "Stephanie Hoffman": 400 },
 					true,
 					new Date("2025-05-02"),
@@ -111,7 +111,7 @@ export const data = {
 					"Lab work scheduled"
 				),
 				new Program(
-					"Biology/Environmental Science",
+					"Biology/Environmental-Science",
 					{ "Danny Najera": 350, "Pam Kikillus": 350 },
 					false,
 					new Date("2025-05-02"),
@@ -134,7 +134,7 @@ export const data = {
 		),
 
 		new Department(
-			"Business, Law, and Education",
+			"Business-Law-and-Education",
 			[
 				new Program(
 					"Accounting",
@@ -145,7 +145,7 @@ export const data = {
 					"Year 1 project"
 				),
 				new Program(
-					"Business Management",
+					"Business-Management",
 					{ Ruth: 400, Madeleine: 400 },
 					true,
 					new Date("2025-05-02"),
@@ -153,7 +153,7 @@ export const data = {
 					"Completed management training module"
 				),
 				new Program(
-					"Business Marketing/Entrepreneurship",
+					"Business-Marketing/Entrepreneurship",
 					{ "Joy Crawford": 500, Jake: 500 },
 					true,
 					new Date("2025-05-02"),

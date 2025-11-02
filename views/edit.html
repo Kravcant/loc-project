@@ -7,7 +7,8 @@
 		<link rel="stylesheet" href="styles/styles.css" />
 		<link rel="stylesheet" href="styles/edit.css" />
 		<script type="module" src="js/department.js" defer></script>
-		<script type="module" src="js/new-edit.js" defer></script>
+		<script src=""></script>
+		<script type="module" src="js/edit.js" defer></script>
 		<script type="module" src="js/script.js" defer></script>
 	</head>
 	<body>
@@ -19,7 +20,6 @@
 		</header>
 		<main>
 			<form id="page-form" class="content-container" action="" method="get">
-				
 				<fieldset id="div-select-set" class="top-section fieldset">
 					<label for="division-select">Choose a Division</label>
 					<select name="division" id="division-select">
@@ -72,82 +72,9 @@
 					<span class="error" id="err-chair"
 						>Please input a name for Chair</span
 					>
-					<button id="save-btn" class="button" type="submit">Save</button>
-					<button id="cancel-btn" class="button" type="button">Cancel</button>
 				</fieldset>
 
-				<section id="programs-container" class="container">
-					<fieldset id="x-program" class="program">
-						<p class="p-title">Fine Arts</p>
-
-						<section
-							id="x-program-payee-container"
-							class="payee-container program-sections"
-						>
-							<div class="payee-item" data-payee-number="1">
-								<label for="x-program-payee-1">Payee #1</label>
-								<div
-									id="x-program-payee-input-section"
-									class="program-payee-input-section"
-								>
-									<input
-										type="text"
-										name="x-program-payee-1"
-										id="x-program-payee-1"
-									/>
-									<input
-										type="number"
-										name="x-program-payee-1-money"
-										id="x-program-payee-1-money"
-									/>
-									<button type="button" class="remove-payee-btn">Remove</button>
-								</div>
-							</div>
-
-							<div>
-								<button type="button" id="add-payee-btn">Add</button>
-							</div>
-						</section>
-
-						<fieldset
-							id="x-program-money-section"
-							class="program-money-section"
-						>
-							<div>
-								<label for="x-program-paid">Has been paid </label>
-								<input
-									type="checkbox"
-									name="x-program-paid"
-									id="x-program-paid"
-								/>
-							</div>
-
-							<hr />
-
-							<div>
-								<label for="x-program-submitted">Submitted </label>
-								<input
-									type="checkbox"
-									name="x-program-submitted"
-									id="x-program-submitted"
-								/>
-							</div>
-						</fieldset>
-
-						<fieldset
-							id="x-program-notes-section"
-							class="program-notes-section"
-						>
-							<label for="x-program-notes">Notes </label>
-							<textarea name="x-program-notes" id="x-program-notes"></textarea>
-						</fieldset>
-						<div class="program-buttons">
-							<button type="button" id="save-program-btn" class="button">Save Program</button>
-							<button type="button" id="cancel-program-btn" class="button">Cancel</button>
-						</div>
-						</fieldset>
-					</fieldset>
-				</section>
+				<section id="programs-container" class="container"></section>
 			</form>
 		</main>
 	</body>
