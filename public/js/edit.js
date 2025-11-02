@@ -1,8 +1,10 @@
 import { data } from "./data.js";
 
-// ============================
-// Global References
-// ============================
+/**
+ * ============================
+ * Global DOM References
+ * ============================
+ */
 const pForm = {
 	ref: document.getElementById("page-form"),
 
@@ -30,23 +32,11 @@ const pForm = {
 
 let selectedDivision = data.departments[0];
 
-// ============================
-// Division Selector Population
-// ============================
-function fillDivisionSelector() {
-	const divSelector = pForm.selectFieldset.divisionSelector;
-
-	data.departments.forEach((dep) => {
-		const opt = document.createElement("option");
-		opt.value = dep.divisionName;
-		opt.textContent = dep.divisionName;
-		divSelector.appendChild(opt);
-	});
-}
-
-// ============================
-// Grey Out / Enable Helpers
-// ============================
+/**
+ * ============================
+ * UI Helper Groups
+ * ============================
+ */
 const contactFields = [
 	pForm.selectFieldset.deanRef,
 	pForm.selectFieldset.penRef,
@@ -54,421 +44,475 @@ const contactFields = [
 	pForm.selectFieldset.chairRef,
 ];
 
-// Contact buttons
-const contactBtnContainer = document.createElement("div");
-contactBtnContainer.classList.add("contact-buttons");
+/**
+ * Create shared contact edit button set
+ */
+const contactEditBtn = createButton("Edit");
+const contactSaveBtn = createButton("Save");
+const contactCancelBtn = createButton("Cancel");
 
-const contactEditBtn = document.createElement("button");
-contactEditBtn.type = "button";
-contactEditBtn.textContent = "Edit";
+pForm.selectFieldset.ref.append(
+	contactEditBtn,
+	contactSaveBtn,
+	contactCancelBtn
+);
 
-const contactSaveBtn = document.createElement("button");
-contactSaveBtn.type = "button";
-contactSaveBtn.textContent = "Save";
+/**
+ * Creates a button element
+ * @param {string} text Button label
+ */
+function createButton(text) {
+	const btn = document.createElement("button");
+	btn.type = "button";
+	btn.textContent = text;
+	return btn;
+}
 
-const contactCancelBtn = document.createElement("button");
-contactCancelBtn.type = "button";
-contactCancelBtn.textContent = "Cancel";
-
-contactBtnContainer.append(contactEditBtn, contactSaveBtn, contactCancelBtn);
-pForm.selectFieldset.ref.appendChild(contactBtnContainer);
-
-// Contact helpers
-function greyOutContactInfo() {
-	contactFields.forEach((el) => {
-		el.disabled = true;
-		el.style.backgroundColor = "#eee";
-		el.style.cursor = "not-allowed";
+/**
+ * ============================
+ * Division Selector Setup
+ * ============================
+ */
+function fillDivisionSelector() {
+	data.departments.forEach((dep) => {
+		const opt = document.createElement("option");
+		opt.value = dep.divisionName;
+		opt.textContent = dep.divisionName;
+		pForm.selectFieldset.divisionSelector.appendChild(opt);
 	});
-	contactEditBtn.style.display = "none";
+}
+
+/**
+ * ============================
+ * Field Enable/Disable Helpers
+ * ============================
+ */
+
+/**
+ * Disable contact fields (view-only)
+ */
+function greyOutContactInfo() {
+	setEnabled(contactFields, false);
+	contactEditBtn.style.display = "inline-block";
 	contactSaveBtn.style.display = "none";
 	contactCancelBtn.style.display = "none";
 }
 
-function enableContactEditBtn() {
-	contactEditBtn.style.display = "inline-block";
+/**
+ * Enables or disables a list of form elements
+ */
+function setEnabled(elements, enabled) {
+	elements.forEach((el) => {
+		el.disabled = !enabled;
+		el.style.backgroundColor = enabled ? "" : "#eee";
+		el.style.cursor = enabled ? "default" : "not-allowed";
+	});
 }
 
-// Program helpers
+/**
+ * Disable all inputs inside a program fieldset
+ */
 function greyOutProgramCard(fieldsetRef) {
-	fieldsetRef.querySelectorAll("input, textarea").forEach((el) => {
-		el.disabled = true;
-		el.style.backgroundColor = "#eee";
-		el.style.cursor = "not-allowed";
-	});
-	fieldsetRef.querySelectorAll(".remove-payee-btn").forEach((btn) => {
-		btn.disabled = true;
-		btn.style.display = "none";
-	});
-	const addBtn = fieldsetRef.querySelector(".payee-container > div > button");
-	if (addBtn) {
-		addBtn.disabled = true;
-		addBtn.style.display = "none";
-	}
+	toggleProgramCard(fieldsetRef, false);
 }
 
+/**
+ * Enable all inputs inside a program fieldset
+ */
 function enableProgramCard(fieldsetRef) {
+	toggleProgramCard(fieldsetRef, true);
+}
+
+/**
+ * Toggles interactive state of program card
+ */
+function toggleProgramCard(fieldsetRef, enabled) {
 	fieldsetRef.querySelectorAll("input, textarea").forEach((el) => {
-		el.disabled = false;
-		el.style.backgroundColor = "";
-		el.style.cursor = "auto";
+		el.disabled = !enabled;
+		el.style.backgroundColor = enabled ? "" : "#eee";
+		el.style.cursor = enabled ? "auto" : "not-allowed";
 	});
+
 	fieldsetRef.querySelectorAll(".remove-payee-btn").forEach((btn) => {
-		btn.disabled = false;
-		btn.style.display = "inline-block";
+		btn.disabled = !enabled;
+		btn.style.display = enabled ? "inline-block" : "none";
 	});
+
 	const addBtn = fieldsetRef.querySelector(".payee-container > div > button");
 	if (addBtn) {
-		addBtn.disabled = false;
-		addBtn.style.display = "inline-block";
+		addBtn.disabled = !enabled;
+		addBtn.style.display = enabled ? "inline-block" : "none";
 	}
 }
 
-// ============================
-// Program Cards Handling
-// ============================
+/**
+ * ============================
+ * Program Card Rendering
+ * ============================
+ */
+
 function clearProgramCards() {
 	pForm.programsFieldset.ref.innerHTML = "";
 }
 
-function createProgramCards(selectedDivision) {
-	const parent = pForm.programsFieldset.ref;
+/**
+ * Renders program cards for selected division
+ */
+function createProgramCards(division) {
+	clearProgramCards();
 
-	if (!selectedDivision) {
-		clearProgramCards();
+	if (!division) {
 		contactEditBtn.style.display = "none";
 		return;
 	}
 
-	clearProgramCards();
-
 	contactEditBtn.style.display = "inline-block";
 
-	selectedDivision.programList.forEach((pro) => {
-		const fieldsetRef = document.createElement("fieldset");
-		fieldsetRef.id = `${pro.programName.toLowerCase()}-program`;
-		fieldsetRef.classList.add("program");
-
-		const programTitleRef = document.createElement("p");
-		programTitleRef.classList.add("p-title");
-		programTitleRef.textContent = pro.programName;
-		fieldsetRef.appendChild(programTitleRef);
-
-		// Payee Section
-		const payeeSection = document.createElement("section");
-		payeeSection.classList.add("payee-container", "program-sections");
-
-		const addPayeeDiv = document.createElement("div");
-		const addPayeeBtn = document.createElement("button");
-		addPayeeBtn.type = "button";
-		addPayeeBtn.textContent = "Add";
-		addPayeeDiv.appendChild(addPayeeBtn);
-		payeeSection.appendChild(addPayeeDiv);
-
-		addPayeeBtn.addEventListener("click", () => {
-			addPayee(payeeSection, pro.programName, addPayeeDiv);
-		});
-
-		for (const [payeeName, payeeAmount] of Object.entries(pro.payees)) {
-			addPayee(
-				payeeSection,
-				pro.programName,
-				addPayeeDiv,
-				payeeName,
-				payeeAmount
-			);
-		}
-
-		fieldsetRef.appendChild(payeeSection);
-
-		// Paid / Submitted Section
-		const moneyFieldset = document.createElement("fieldset");
-		moneyFieldset.classList.add("program-money-section");
-
-		const paidDiv = document.createElement("div");
-		const paidLabel = document.createElement("label");
-		paidLabel.htmlFor = `${pro.programName.toLowerCase()}-paid`;
-		paidLabel.textContent = "Has been paid";
-		const paidInput = document.createElement("input");
-		paidInput.type = "checkbox";
-		paidInput.id = `${pro.programName.toLowerCase()}-paid`;
-		paidInput.checked = pro.hasBeenPaid;
-		paidDiv.append(paidLabel, paidInput);
-
-		const submittedDiv = document.createElement("div");
-		const submittedLabel = document.createElement("label");
-		submittedLabel.htmlFor = `${pro.programName.toLowerCase()}-submitted`;
-		submittedLabel.textContent = "Submitted";
-		const submittedInput = document.createElement("input");
-		submittedInput.type = "checkbox";
-		submittedInput.id = `${pro.programName.toLowerCase()}-submitted`;
-		submittedInput.checked = pro.reportSubmitted;
-		submittedDiv.append(submittedLabel, submittedInput);
-
-		moneyFieldset.append(paidDiv, document.createElement("hr"), submittedDiv);
-		fieldsetRef.appendChild(moneyFieldset);
-
-		// Notes Section
-		const notesFieldset = document.createElement("fieldset");
-		notesFieldset.classList.add("program-notes-section");
-
-		const notesLabel = document.createElement("label");
-		notesLabel.htmlFor = `${pro.programName.toLowerCase()}-notes`;
-		notesLabel.textContent = "Notes";
-
-		const notesTextarea = document.createElement("textarea");
-		notesTextarea.id = `${pro.programName.toLowerCase()}-notes`;
-		notesTextarea.value = pro.notes || "";
-
-		notesFieldset.append(notesLabel, notesTextarea);
-		fieldsetRef.appendChild(notesFieldset);
-
-		// Action Buttons
-		const btnContainer = document.createElement("div");
-		btnContainer.classList.add("program-buttons");
-
-		const editBtn = document.createElement("button");
-		editBtn.type = "button";
-		editBtn.textContent = "Edit";
-
-		const saveBtn = document.createElement("button");
-		saveBtn.type = "button";
-		saveBtn.textContent = "Save Program";
-
-		const cancelBtn = document.createElement("button");
-		cancelBtn.type = "button";
-		cancelBtn.textContent = "Cancel";
-
-		btnContainer.append(editBtn, saveBtn, cancelBtn);
-		fieldsetRef.appendChild(btnContainer);
-
-		parent.appendChild(fieldsetRef);
-
-		// Grey out initially
+	division.programList.forEach((program) => {
+		const fieldsetRef = buildProgramCard(program);
+		pForm.programsFieldset.ref.appendChild(fieldsetRef);
 		greyOutProgramCard(fieldsetRef);
-		saveBtn.style.display = "none";
-		cancelBtn.style.display = "none";
-
-		// --------------------------
-		// Edit Click
-		// --------------------------
-		editBtn.addEventListener("click", () => {
-			const originalState = {
-				notes: notesTextarea.value,
-				payees: Object.fromEntries(
-					[...payeeSection.querySelectorAll(".payee-item")].map((item) => {
-						const nameInput = item.querySelector("input[type=text]");
-						const moneyInput = item.querySelector("input[type=number]");
-						return [nameInput.value, moneyInput.value];
-					})
-				),
-				hasBeenPaid: paidInput.checked,
-				reportSubmitted: submittedInput.checked,
-			};
-
-			enableProgramCard(fieldsetRef);
-
-			editBtn.style.display = "none";
-			saveBtn.style.display = "inline-block";
-			cancelBtn.style.display = "inline-block";
-
-			// Cancel
-			cancelBtn.onclick = () => {
-				notesTextarea.value = originalState.notes;
-				payeeSection
-					.querySelectorAll(".payee-item")
-					.forEach((el) => el.remove());
-				for (const [name, amount] of Object.entries(originalState.payees)) {
-					addPayee(payeeSection, pro.programName, addPayeeDiv, name, amount);
-				}
-				paidInput.checked = originalState.hasBeenPaid;
-				submittedInput.checked = originalState.reportSubmitted;
-
-				greyOutProgramCard(fieldsetRef);
-
-				editBtn.style.display = "inline-block";
-				saveBtn.style.display = "none";
-				cancelBtn.style.display = "none";
-			};
-
-			// Save
-			saveBtn.onclick = () => {
-				pro.notes = notesTextarea.value;
-				pro.payees = {};
-				payeeSection.querySelectorAll(".payee-item").forEach((item) => {
-					const nameInput = item.querySelector("input[type=text]");
-					const moneyInput = item.querySelector("input[type=number]");
-					pro.payees[nameInput.value] = moneyInput.value;
-				});
-				pro.hasBeenPaid = paidInput.checked;
-				pro.reportSubmitted = submittedInput.checked;
-
-				greyOutProgramCard(fieldsetRef);
-
-				editBtn.style.display = "inline-block";
-				saveBtn.style.display = "none";
-				cancelBtn.style.display = "none";
-			};
-		});
 	});
 }
 
-// ============================
-// Payee Helpers
-// ============================
-function addPayee(
-	payeeSection,
-	programName,
-	addBtnDiv,
-	name = "",
-	amount = ""
-) {
-	const payeeItems = payeeSection.querySelectorAll(".payee-item");
-	const newPayeeNumber = payeeItems.length + 1;
+/**
+ * Builds one program card (fieldset)
+ */
+function buildProgramCard(program) {
+	const fieldsetRef = document.createElement("fieldset");
+	fieldsetRef.id = `${program.programName.toLowerCase()}-program`;
+	fieldsetRef.classList.add("program");
 
-	const payeeDiv = document.createElement("div");
-	payeeDiv.classList.add("payee-item");
-	payeeDiv.dataset.payeeNumber = newPayeeNumber;
+	fieldsetRef.appendChild(createProgramTitle(program));
+	const payeeSection = createPayeeSection(program);
+	fieldsetRef.appendChild(payeeSection);
+	fieldsetRef.appendChild(createMoneySection(program));
+	const notes = createNotesSection(program);
+	fieldsetRef.appendChild(notes);
+	fieldsetRef.appendChild(
+		createProgramButtons(fieldsetRef, program, payeeSection, notes)
+	);
+
+	return fieldsetRef;
+}
+
+/**
+ * UI builders (program card internals)
+ */
+function createProgramTitle(program) {
+	const title = document.createElement("p");
+	title.classList.add("p-title");
+	title.textContent = program.programName;
+	return title;
+}
+
+function createPayeeSection(program) {
+	const section = document.createElement("section");
+	section.classList.add("payee-container", "program-sections");
+
+	const controlDiv = document.createElement("div");
+	const addBtn = createButton("Add");
+	controlDiv.appendChild(addBtn);
+	section.appendChild(controlDiv);
+
+	addBtn.onclick = () => addPayee(section, program.programName, controlDiv);
+
+	Object.entries(program.payees).forEach(([name, amt]) =>
+		addPayee(section, program.programName, controlDiv, name, amt)
+	);
+
+	return section;
+}
+
+function createMoneySection(program) {
+	const fs = document.createElement("fieldset");
+	fs.classList.add("program-money-section");
+
+	fs.appendChild(createCheckbox("Has been paid", program, "hasBeenPaid"));
+	fs.appendChild(document.createElement("hr"));
+	fs.appendChild(createCheckbox("Submitted", program, "reportSubmitted"));
+
+	return fs;
+}
+
+function createCheckbox(labelText, program, key) {
+	const div = document.createElement("div");
+	const label = document.createElement("label");
+	label.textContent = labelText;
+	const input = document.createElement("input");
+	input.type = "checkbox";
+	input.checked = program[key];
+	div.append(label, input);
+	return div;
+}
+
+function createNotesSection(program) {
+	const fs = document.createElement("fieldset");
+	fs.classList.add("program-notes-section");
 
 	const label = document.createElement("label");
-	label.htmlFor = `${programName.toLowerCase()}-payee-${newPayeeNumber}`;
-	label.textContent = `Payee #${newPayeeNumber}`;
+	label.textContent = "Notes";
 
-	const inputSection = document.createElement("div");
-	inputSection.classList.add("program-payee-input-section");
+	const textarea = document.createElement("textarea");
+	textarea.value = program.notes || "";
+
+	fs.append(label, textarea);
+	return fs;
+}
+
+function createProgramButtons(fieldsetRef, program, payeeSection, notesField) {
+	const container = document.createElement("div");
+	container.classList.add("program-buttons");
+
+	const editBtn = createButton("Edit");
+	const saveBtn = createButton("Save Program");
+	const cancelBtn = createButton("Cancel");
+
+	container.append(editBtn, saveBtn, cancelBtn);
+
+	saveBtn.style.display = "none";
+	cancelBtn.style.display = "none";
+
+	editBtn.onclick = () =>
+		enterProgramEditMode(
+			fieldsetRef,
+			program,
+			payeeSection,
+			notesField,
+			editBtn,
+			saveBtn,
+			cancelBtn
+		);
+	return container;
+}
+
+/**
+ * Program Edit Mode handling
+ */
+function enterProgramEditMode(
+	fieldsetRef,
+	program,
+	payeeSection,
+	notesField,
+	editBtn,
+	saveBtn,
+	cancelBtn
+) {
+	const originalState = captureProgramState(payeeSection, notesField, program);
+
+	enableProgramCard(fieldsetRef);
+	editBtn.style.display = "none";
+	saveBtn.style.display = "inline-block";
+	cancelBtn.style.display = "inline-block";
+
+	cancelBtn.onclick = () =>
+		restoreProgramState(
+			originalState,
+			fieldsetRef,
+			payeeSection,
+			notesField,
+			program,
+			editBtn,
+			saveBtn,
+			cancelBtn
+		);
+	saveBtn.onclick = () =>
+		saveProgramState(
+			payeeSection,
+			notesField,
+			program,
+			fieldsetRef,
+			editBtn,
+			saveBtn,
+			cancelBtn
+		);
+}
+
+function captureProgramState(payeeSection, notesField, program) {
+	return {
+		notes: notesField.querySelector("textarea").value,
+		payees: Object.fromEntries(
+			[...payeeSection.querySelectorAll(".payee-item")].map((item) => {
+				const name = item.querySelector("input[type=text]").value;
+				const amt = item.querySelector("input[type=number]").value;
+				return [name, amt];
+			})
+		),
+		hasBeenPaid: program.hasBeenPaid,
+		reportSubmitted: program.reportSubmitted,
+	};
+}
+
+function restoreProgramState(
+	state,
+	fieldsetRef,
+	payeeSection,
+	notesField,
+	program,
+	editBtn,
+	saveBtn,
+	cancelBtn
+) {
+	notesField.querySelector("textarea").value = state.notes;
+	payeeSection.querySelectorAll(".payee-item").forEach((el) => el.remove());
+
+	for (const [name, amt] of Object.entries(state.payees)) {
+		addPayee(
+			payeeSection,
+			program.programName,
+			payeeSection.querySelector("div"),
+			name,
+			amt
+		);
+	}
+
+	program.hasBeenPaid = state.hasBeenPaid;
+	program.reportSubmitted = state.reportSubmitted;
+
+	greyOutProgramCard(fieldsetRef);
+	editBtn.style.display = "inline-block";
+	saveBtn.style.display = "none";
+	cancelBtn.style.display = "none";
+}
+
+function saveProgramState(
+	payeeSection,
+	notesField,
+	program,
+	fieldsetRef,
+	editBtn,
+	saveBtn,
+	cancelBtn
+) {
+	program.notes = notesField.querySelector("textarea").value;
+	program.payees = {};
+
+	payeeSection.querySelectorAll(".payee-item").forEach((item) => {
+		const name = item.querySelector("input[type=text]").value;
+		const amt = item.querySelector("input[type=number]").value;
+		program.payees[name] = amt;
+	});
+
+	greyOutProgramCard(fieldsetRef);
+	editBtn.style.display = "inline-block";
+	saveBtn.style.display = "none";
+	cancelBtn.style.display = "none";
+}
+
+/**
+ * ============================
+ * Payee Helpers
+ * ============================
+ */
+function addPayee(section, programName, controlDiv, name = "", amount = "") {
+	const index = section.querySelectorAll(".payee-item").length + 1;
+
+	const wrapper = document.createElement("div");
+	wrapper.classList.add("payee-item");
+
+	const label = document.createElement("label");
+	label.textContent = `Payee #${index}`;
+
+	const inputRow = document.createElement("div");
+	inputRow.classList.add("program-payee-input-section");
 
 	const nameInput = document.createElement("input");
 	nameInput.type = "text";
-	nameInput.id = `${programName.toLowerCase()}-payee-${newPayeeNumber}`;
 	nameInput.value = name;
 
-	const moneyInput = document.createElement("input");
-	moneyInput.type = "number";
-	moneyInput.id = `${programName.toLowerCase()}-payee-${newPayeeNumber}-money`;
-	moneyInput.value = amount;
+	const amountInput = document.createElement("input");
+	amountInput.type = "number";
+	amountInput.value = amount;
 
-	const removeBtn = document.createElement("button");
-	removeBtn.type = "button";
+	const removeBtn = createButton("Remove");
 	removeBtn.classList.add("remove-payee-btn");
-	removeBtn.textContent = "Remove";
-
-	removeBtn.addEventListener("click", () => {
-		payeeDiv.remove();
-		updatePayeeNumbers(payeeSection, programName);
-	});
-
-	inputSection.append(nameInput, moneyInput, removeBtn);
-	payeeDiv.append(label, inputSection);
-
-	payeeSection.insertBefore(payeeDiv, addBtnDiv);
-}
-
-function updatePayeeNumbers(payeeSection, programName) {
-	const payeeItems = payeeSection.querySelectorAll(".payee-item");
-	payeeItems.forEach((payeeDiv, index) => {
-		const number = index + 1;
-		payeeDiv.dataset.payeeNumber = number;
-
-		const label = payeeDiv.querySelector("label");
-		label.htmlFor = `${programName.toLowerCase()}-payee-${number}`;
-		label.textContent = `Payee #${number}`;
-
-		const nameInput = payeeDiv.querySelector("input[type=text]");
-		nameInput.id = `${programName.toLowerCase()}-payee-${number}`;
-
-		const moneyInput = payeeDiv.querySelector("input[type=number]");
-		moneyInput.id = `${programName.toLowerCase()}-payee-${number}-money`;
-	});
-}
-
-// ============================
-// Contact Info Handling
-// ============================
-contactEditBtn.addEventListener("click", () => {
-	const originalState = {
-		dean: pForm.selectFieldset.deanRef.value,
-		pen: pForm.selectFieldset.penRef.value,
-		loc: pForm.selectFieldset.locRef.value,
-		chair: pForm.selectFieldset.chairRef.value,
+	removeBtn.onclick = () => {
+		wrapper.remove();
+		updatePayeeNumbers(section);
 	};
 
-	contactFields.forEach((el) => {
-		el.disabled = false;
-		el.style.backgroundColor = "";
-		el.style.cursor = "auto";
+	inputRow.append(nameInput, amountInput, removeBtn);
+	wrapper.append(label, inputRow);
+
+	section.insertBefore(wrapper, controlDiv);
+}
+
+function updatePayeeNumbers(section) {
+	section.querySelectorAll(".payee-item").forEach((div, i) => {
+		div.querySelector("label").textContent = `Payee #${i + 1}`;
 	});
+}
+
+/**
+ * ============================
+ * Contact Info Handling
+ * ============================
+ */
+contactEditBtn.onclick = () => {
+	const originalState = captureContactState();
+	setEnabled(contactFields, true);
 
 	contactEditBtn.style.display = "none";
 	contactSaveBtn.style.display = "inline-block";
 	contactCancelBtn.style.display = "inline-block";
 
-	// Cancel click
-	contactCancelBtn.onclick = () => {
-		pForm.selectFieldset.deanRef.value = originalState.dean;
-		pForm.selectFieldset.penRef.value = originalState.pen;
-		pForm.selectFieldset.locRef.value = originalState.loc;
-		pForm.selectFieldset.chairRef.value = originalState.chair;
+	contactCancelBtn.onclick = () => restoreContactState(originalState);
+	contactSaveBtn.onclick = saveContactState;
+};
 
-		greyOutContactInfo();
+function captureContactState() {
+	return {
+		dean: pForm.selectFieldset.deanRef.value,
+		pen: pForm.selectFieldset.penRef.value,
+		loc: pForm.selectFieldset.locRef.value,
+		chair: pForm.selectFieldset.chairRef.value,
 	};
-
-	// Save click
-	contactSaveBtn.onclick = () => {
-		if (selectedDivision) {
-			selectedDivision.deanName = pForm.selectFieldset.deanRef.value;
-			selectedDivision.penContact = pForm.selectFieldset.penRef.value;
-			selectedDivision.locRep = pForm.selectFieldset.locRef.value;
-			selectedDivision.chairName = pForm.selectFieldset.chairRef.value;
-		}
-		greyOutContactInfo();
-	};
-});
-
-// ============================
-// Contact Info Update
-// ============================
-function toggleEnabled(toggle, elements) {
-	elements.forEach((el) => {
-		el.disabled = !toggle;
-		el.style.backgroundColor = toggle ? "" : "#eee";
-		el.style.cursor = toggle ? "auto" : "not-allowed";
-	});
 }
 
-function updateContactInfo(depName) {
-	const fields = pForm.selectFieldset;
+function restoreContactState(state) {
+	Object.assign(selectedDivision, state);
+	updateContactInfo(selectedDivision.divisionName);
+	greyOutContactInfo();
+}
 
-	if (!depName) {
-		fields.deanRef.value = "";
-		fields.penRef.value = "";
-		fields.locRef.value = "";
-		fields.chairRef.value = "";
+function saveContactState() {
+	Object.assign(selectedDivision, {
+		deanName: pForm.selectFieldset.deanRef.value,
+		penContact: pForm.selectFieldset.penRef.value,
+		locRep: pForm.selectFieldset.locRef.value,
+		chairName: pForm.selectFieldset.chairRef.value,
+	});
+	greyOutContactInfo();
+}
 
-		toggleEnabled(false, contactFields);
+function updateContactInfo(name) {
+	const dept = data.departments.find((d) => d.divisionName === name);
+	selectedDivision = dept;
+
+	if (!dept) {
+		setEnabled(contactFields, false);
+		contactFields.forEach((el) => (el.value = ""));
 		return;
 	}
 
-	const dept = data.departments.find((d) => d.divisionName === depName);
-	selectedDivision = dept;
-	if (!dept) return;
+	pForm.selectFieldset.deanRef.value = dept.deanName;
+	pForm.selectFieldset.penRef.value = dept.penContact;
+	pForm.selectFieldset.locRef.value = dept.locRep;
+	pForm.selectFieldset.chairRef.value = dept.chairName;
 
-	fields.deanRef.value = dept.deanName;
-	fields.penRef.value = dept.penContact;
-	fields.locRef.value = dept.locRep;
-	fields.chairRef.value = dept.chairName;
-
-	enableContactEditBtn();
-	toggleEnabled(false, contactFields);
+	setEnabled(contactFields, false);
 }
 
-function updateProgramCards(depName) {
-	const dept = data.departments.find((d) => d.divisionName === depName);
+function updateProgramCards(name) {
+	const dept = data.departments.find((d) => d.divisionName === name);
 	createProgramCards(dept);
 }
 
-// ============================
-// Initialization
-// ============================
+/**
+ * ============================
+ * Initialization
+ * ============================
+ */
 fillDivisionSelector();
 clearProgramCards();
 greyOutContactInfo();
