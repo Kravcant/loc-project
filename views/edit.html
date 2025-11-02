@@ -19,7 +19,7 @@
 		</header>
 		<main>
 			<form id="page-form" class="content-container" action="" method="get">
-				<!-- Fieldset for division selector -->
+				
 				<fieldset id="div-select-set" class="top-section fieldset">
 					<label for="division-select">Choose a Division</label>
 					<select name="division" id="division-select">
@@ -72,13 +72,10 @@
 					<span class="error" id="err-chair"
 						>Please input a name for Chair</span
 					>
-
-					<!-- Buttons -->
 					<button id="save-btn" class="button" type="submit">Save</button>
 					<button id="cancel-btn" class="button" type="button">Cancel</button>
 				</fieldset>
 
-				<!-- Fieldset for programs information -->
 				<section id="programs-container" class="container">
 					<fieldset id="x-program" class="program">
 						<p class="p-title">Fine Arts</p>
@@ -87,31 +84,31 @@
 							id="x-program-payee-container"
 							class="payee-container program-sections"
 						>
-							<label for="x-program-payee-1">Payee #1</label>
-							<div
-								id="x-program-payee-input-section"
-								class="program-payee-input-section"
-							>
-								<input
-									type="text"
-									name="x-program-payee-1"
-									id="x-program-payee-1"
-								/>
-								<input
-									type="number"
-									name="x-program-payee-1"
-									id="x-program-payee-1-money"
-								/>
+							<div class="payee-item" data-payee-number="1">
+								<label for="x-program-payee-1">Payee #1</label>
+								<div
+									id="x-program-payee-input-section"
+									class="program-payee-input-section"
+								>
+									<input
+										type="text"
+										name="x-program-payee-1"
+										id="x-program-payee-1"
+									/>
+									<input
+										type="number"
+										name="x-program-payee-1-money"
+										id="x-program-payee-1-money"
+									/>
+									<button type="button" class="remove-payee-btn">Remove</button>
+								</div>
 							</div>
 
-							<!-- Buttons to add/remove payees -->
 							<div>
-								<button>Add</button>
-								<button>Remove</button>
+								<button type="button" id="add-payee-btn">Add</button>
 							</div>
 						</section>
 
-						<!-- Fieldset for money -->
 						<fieldset
 							id="x-program-money-section"
 							class="program-money-section"
@@ -137,13 +134,17 @@
 							</div>
 						</fieldset>
 
-						<!-- Fieldset for notes -->
 						<fieldset
 							id="x-program-notes-section"
 							class="program-notes-section"
 						>
 							<label for="x-program-notes">Notes </label>
 							<textarea name="x-program-notes" id="x-program-notes"></textarea>
+						</fieldset>
+						<div class="program-buttons">
+							<button type="button" id="save-program-btn" class="button">Save Program</button>
+							<button type="button" id="cancel-program-btn" class="button">Cancel</button>
+						</div>
 						</fieldset>
 					</fieldset>
 				</section>
