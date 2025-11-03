@@ -596,11 +596,25 @@ function restoreContactState(state) {
 	// put the snapshot back into the selectedDivision and update UI
 	if (!selectedDivision) return;
 
+	// Clear validation borders (VERY IMPORTANT)
+	const inputs = [
+		pForm.selectFieldset.deanRef,
+		pForm.selectFieldset.penRef,
+		pForm.selectFieldset.locRef,
+		pForm.selectFieldset.chairRef,
+	];
+
+	inputs.forEach((input) => {
+		input.style.border = ""; // reset border
+	});
+
+	// Restore saved state
 	selectedDivision.deanName = state.dean;
 	selectedDivision.penContact = state.pen;
 	selectedDivision.locRep = state.loc;
 	selectedDivision.chairName = state.chair;
 
+	// Update UI and lock fields
 	updateContactInfo(selectedDivision.divisionName);
 	greyOutContactInfo();
 
@@ -611,15 +625,51 @@ function restoreContactState(state) {
 function saveContactState() {
 	if (!selectedDivision) return;
 
-	selectedDivision.deanName = pForm.selectFieldset.deanRef.value;
-	selectedDivision.penContact = pForm.selectFieldset.penRef.value;
-	selectedDivision.locRep = pForm.selectFieldset.locRef.value;
-	selectedDivision.chairName = pForm.selectFieldset.chairRef.value;
+	// Track validation status
+	let hasError = false;
 
-	// After saving, reflect changes and lock down UI
+	// List of required textboxes
+	const requiredFields = [
+		pForm.selectFieldset.deanRef,
+		pForm.selectFieldset.penRef,
+		pForm.selectFieldset.locRef,
+		pForm.selectFieldset.chairRef,
+	];
+
+	requiredFields.forEach((input) => {
+		const value = input.value.trim();
+
+		// If empty → highlight
+		if (value === "") {
+			hasError = true;
+			input.style.border = "2px solid red";
+
+			// Remove border once user interacts again
+			input.addEventListener(
+				"input",
+				() => {
+					input.style.border = "";
+				},
+				{ once: true }
+			);
+		}
+	});
+
+	// Stop save if invalid
+	if (hasError) {
+		return;
+	}
+
+	// Save values if all good
+	selectedDivision.deanName = pForm.selectFieldset.deanRef.value.trim();
+	selectedDivision.penContact = pForm.selectFieldset.penRef.value.trim();
+	selectedDivision.locRep = pForm.selectFieldset.locRef.value.trim();
+	selectedDivision.chairName = pForm.selectFieldset.chairRef.value.trim();
+
+	// Lock UI
 	greyOutContactInfo();
 
-	// Log values for testing
+	// Debug output
 	console.log(data);
 }
 
