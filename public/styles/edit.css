@@ -158,7 +158,6 @@ fieldset:hover,
 .program-payee-input-section {
 	display: grid;
 	grid-template-columns: 85% 15%;
-	gap: var(--gap-small);
 }
 
 .payee-item {

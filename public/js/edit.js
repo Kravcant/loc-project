@@ -1,10 +1,8 @@
 import { data } from "./data.js";
 
-/**
- * ============================
- * Global DOM References
- * ============================
- */
+/* ----------------------------
+   Top-level DOM references
+   ---------------------------- */
 const pForm = {
 	ref: document.getElementById("page-form"),
 
@@ -30,13 +28,13 @@ const pForm = {
 	},
 };
 
-let selectedDivision = data.departments[0];
+// The currently selected department object from `data`
+let selectedDivision = data.departments[0] || null;
 
-/**
- * ============================
- * UI Helper Groups
- * ============================
- */
+/* ----------------------------
+   UI Control Elements (buttons)
+   Created once and appended into the contact area
+   ---------------------------- */
 const contactFields = [
 	pForm.selectFieldset.deanRef,
 	pForm.selectFieldset.penRef,
@@ -44,9 +42,6 @@ const contactFields = [
 	pForm.selectFieldset.chairRef,
 ];
 
-/**
- * Create shared contact edit button set
- */
 const contactEditBtn = createButton("Edit");
 const contactSaveBtn = createButton("Save");
 const contactCancelBtn = createButton("Cancel");
@@ -57,9 +52,13 @@ pForm.selectFieldset.ref.append(
 	contactCancelBtn
 );
 
+/* ----------------------------
+   Utility / DOM Helpers
+   ---------------------------- */
 /**
- * Creates a button element
- * @param {string} text Button label
+ * Create a button element with type="button"
+ * @param {string} text
+ * @returns {HTMLButtonElement}
  */
 function createButton(text) {
 	const btn = document.createElement("button");
@@ -69,37 +68,9 @@ function createButton(text) {
 }
 
 /**
- * ============================
- * Division Selector Setup
- * ============================
- */
-function fillDivisionSelector() {
-	data.departments.forEach((dep) => {
-		const opt = document.createElement("option");
-		opt.value = dep.divisionName;
-		opt.textContent = dep.divisionName;
-		pForm.selectFieldset.divisionSelector.appendChild(opt);
-	});
-}
-
-/**
- * ============================
- * Field Enable/Disable Helpers
- * ============================
- */
-
-/**
- * Disable contact fields (view-only)
- */
-function greyOutContactInfo() {
-	setEnabled(contactFields, false);
-	contactEditBtn.style.display = "inline-block";
-	contactSaveBtn.style.display = "none";
-	contactCancelBtn.style.display = "none";
-}
-
-/**
- * Enables or disables a list of form elements
+ * Safely set enabled/disabled state for an array of form fields
+ * @param {HTMLElement[]} elements
+ * @param {boolean} enabled
  */
 function setEnabled(elements, enabled) {
 	elements.forEach((el) => {
@@ -110,29 +81,57 @@ function setEnabled(elements, enabled) {
 }
 
 /**
- * Disable all inputs inside a program fieldset
+ * Clear a container's children
+ * @param {HTMLElement} container
  */
-function greyOutProgramCard(fieldsetRef) {
-	toggleProgramCard(fieldsetRef, false);
+function clearContainer(container) {
+	container.innerHTML = "";
 }
 
-/**
- * Enable all inputs inside a program fieldset
- */
-function enableProgramCard(fieldsetRef) {
-	toggleProgramCard(fieldsetRef, true);
+/* ----------------------------
+   Division selector population
+   ---------------------------- */
+function fillDivisionSelector() {
+	const selector = pForm.selectFieldset.divisionSelector;
+	// Defensive: ensure selector exists
+	if (!selector) return;
+
+	// First clear any existing options (in case function is re-run)
+	selector.innerHTML = "";
+
+	// Add a placeholder option
+	const placeholder = document.createElement("option");
+	placeholder.value = "";
+	placeholder.textContent = "-- Select division --";
+	selector.appendChild(placeholder);
+
+	data.departments.forEach((dep) => {
+		const opt = document.createElement("option");
+		opt.value = dep.divisionName;
+		opt.textContent = dep.divisionName;
+		selector.appendChild(opt);
+	});
 }
 
-/**
- * Toggles interactive state of program card
- */
+/* ----------------------------
+   Program card UI toggles
+   ---------------------------- */
+function greyOutContactInfo() {
+	setEnabled(contactFields, false);
+	contactEditBtn.style.display = "inline-block";
+	contactSaveBtn.style.display = "none";
+	contactCancelBtn.style.display = "none";
+}
+
 function toggleProgramCard(fieldsetRef, enabled) {
+	// Disable/enable inputs and textareas
 	fieldsetRef.querySelectorAll("input, textarea").forEach((el) => {
 		el.disabled = !enabled;
 		el.style.backgroundColor = enabled ? "" : "#eee";
 		el.style.cursor = enabled ? "auto" : "not-allowed";
 	});
 
+	// Show/hide remove buttons and add button
 	fieldsetRef.querySelectorAll(".remove-payee-btn").forEach((btn) => {
 		btn.disabled = !enabled;
 		btn.style.display = enabled ? "inline-block" : "none";
@@ -145,21 +144,22 @@ function toggleProgramCard(fieldsetRef, enabled) {
 	}
 }
 
-/**
- * ============================
- * Program Card Rendering
- * ============================
- */
-
-function clearProgramCards() {
-	pForm.programsFieldset.ref.innerHTML = "";
+function greyOutProgramCard(fieldsetRef) {
+	toggleProgramCard(fieldsetRef, false);
 }
 
-/**
- * Renders program cards for selected division
- */
+function enableProgramCard(fieldsetRef) {
+	toggleProgramCard(fieldsetRef, true);
+}
+
+/* ----------------------------
+   Program card rendering
+   ---------------------------- */
 function createProgramCards(division) {
-	clearProgramCards();
+	const parent = pForm.programsFieldset.ref;
+	if (!parent) return;
+
+	clearContainer(parent);
 
 	if (!division) {
 		contactEditBtn.style.display = "none";
@@ -169,41 +169,47 @@ function createProgramCards(division) {
 	contactEditBtn.style.display = "inline-block";
 
 	division.programList.forEach((program) => {
-		const fieldsetRef = buildProgramCard(program);
-		pForm.programsFieldset.ref.appendChild(fieldsetRef);
-		greyOutProgramCard(fieldsetRef);
+		const card = buildProgramCard(program);
+		parent.appendChild(card);
+		greyOutProgramCard(card);
 	});
 }
 
-/**
- * Builds one program card (fieldset)
- */
 function buildProgramCard(program) {
-	const fieldsetRef = document.createElement("fieldset");
-	fieldsetRef.id = `${program.programName.toLowerCase()}-program`;
-	fieldsetRef.classList.add("program");
+	const fieldset = document.createElement("fieldset");
+	fieldset.classList.add("program");
+	fieldset.id = `${program.programName
+		.toLowerCase()
+		.replace(/\s+/g, "-")}-program`;
 
-	fieldsetRef.appendChild(createProgramTitle(program));
-	const payeeSection = createPayeeSection(program);
-	fieldsetRef.appendChild(payeeSection);
-	fieldsetRef.appendChild(createMoneySection(program));
-	const notes = createNotesSection(program);
-	fieldsetRef.appendChild(notes);
-	fieldsetRef.appendChild(
-		createProgramButtons(fieldsetRef, program, payeeSection, notes)
-	);
-
-	return fieldsetRef;
-}
-
-/**
- * UI builders (program card internals)
- */
-function createProgramTitle(program) {
+	// Title
 	const title = document.createElement("p");
 	title.classList.add("p-title");
 	title.textContent = program.programName;
-	return title;
+	fieldset.appendChild(title);
+
+	// Payee section
+	const payeeSection = createPayeeSection(program);
+	fieldset.appendChild(payeeSection);
+
+	// Money/checkboxes
+	const moneySection = createMoneySection(program);
+	fieldset.appendChild(moneySection);
+
+	// Notes
+	const notesSection = createNotesSection(program);
+	fieldset.appendChild(notesSection);
+
+	// Buttons
+	const buttons = createProgramButtons(
+		fieldset,
+		program,
+		payeeSection,
+		notesSection
+	);
+	fieldset.appendChild(buttons);
+
+	return fieldset;
 }
 
 function createPayeeSection(program) {
@@ -217,9 +223,12 @@ function createPayeeSection(program) {
 
 	addBtn.onclick = () => addPayee(section, program.programName, controlDiv);
 
-	Object.entries(program.payees).forEach(([name, amt]) =>
-		addPayee(section, program.programName, controlDiv, name, amt)
-	);
+	// Populate existing payees (guarding for different shapes)
+	const payees = program.payees || {};
+	Object.entries(payees).forEach(([name, amt]) => {
+		// present amount as string in the input; internal model will convert on save
+		addPayee(section, program.programName, controlDiv, name, String(amt));
+	});
 
 	return section;
 }
@@ -228,22 +237,30 @@ function createMoneySection(program) {
 	const fs = document.createElement("fieldset");
 	fs.classList.add("program-money-section");
 
-	fs.appendChild(createCheckbox("Has been paid", program, "hasBeenPaid"));
+	// Helper to create a labeled checkbox
+	const makeCheckboxRow = (labelText, initialChecked) => {
+		const div = document.createElement("div");
+		const label = document.createElement("label");
+		label.textContent = labelText;
+		const input = document.createElement("input");
+		input.type = "checkbox";
+		input.checked = !!initialChecked;
+		div.append(label, input);
+		return { div, input };
+	};
+
+	const paidRow = makeCheckboxRow("Has been paid", program.hasBeenPaid);
+	const submittedRow = makeCheckboxRow("Submitted", program.reportSubmitted);
+
+	fs.appendChild(paidRow.div);
 	fs.appendChild(document.createElement("hr"));
-	fs.appendChild(createCheckbox("Submitted", program, "reportSubmitted"));
+	fs.appendChild(submittedRow.div);
+
+	// Store references on the fieldset for later reads (simple local cache)
+	fs._paidInput = paidRow.input;
+	fs._submittedInput = submittedRow.input;
 
 	return fs;
-}
-
-function createCheckbox(labelText, program, key) {
-	const div = document.createElement("div");
-	const label = document.createElement("label");
-	label.textContent = labelText;
-	const input = document.createElement("input");
-	input.type = "checkbox";
-	input.checked = program[key];
-	div.append(label, input);
-	return div;
 }
 
 function createNotesSection(program) {
@@ -283,12 +300,13 @@ function createProgramButtons(fieldsetRef, program, payeeSection, notesField) {
 			saveBtn,
 			cancelBtn
 		);
+
 	return container;
 }
 
-/**
- * Program Edit Mode handling
- */
+/* ----------------------------
+   Program Edit Mode (capture / restore / save)
+   ---------------------------- */
 function enterProgramEditMode(
 	fieldsetRef,
 	program,
@@ -298,7 +316,12 @@ function enterProgramEditMode(
 	saveBtn,
 	cancelBtn
 ) {
-	const originalState = captureProgramState(payeeSection, notesField, program);
+	const originalState = captureProgramState(
+		payeeSection,
+		notesField,
+		fieldsetRef,
+		program
+	);
 
 	enableProgramCard(fieldsetRef);
 	editBtn.style.display = "none";
@@ -320,26 +343,45 @@ function enterProgramEditMode(
 		saveProgramState(
 			payeeSection,
 			notesField,
-			program,
 			fieldsetRef,
+			program,
 			editBtn,
 			saveBtn,
 			cancelBtn
 		);
 }
 
-function captureProgramState(payeeSection, notesField, program) {
+/**
+ * Capture the current editable UI state (used when entering edit mode)
+ */
+function captureProgramState(payeeSection, notesField, fieldsetRef, program) {
+	// Capture payees as name -> string (as presented in inputs)
+	const payees = Object.fromEntries(
+		[...payeeSection.querySelectorAll(".payee-item")].map((item) => {
+			const name = item.querySelector("input[type=text]").value;
+			const amt = item.querySelector("input[type=number]").value;
+			return [name, amt];
+		})
+	);
+
+	// capture notes
+	const notes = notesField.querySelector("textarea").value;
+
+	// capture checkbox states from the money section (assumes single money section exists)
+	const paidInput = fieldsetRef.querySelector(
+		".program-money-section"
+	)?._paidInput;
+	const submittedInput = fieldsetRef.querySelector(
+		".program-money-section"
+	)?._submittedInput;
+
 	return {
-		notes: notesField.querySelector("textarea").value,
-		payees: Object.fromEntries(
-			[...payeeSection.querySelectorAll(".payee-item")].map((item) => {
-				const name = item.querySelector("input[type=text]").value;
-				const amt = item.querySelector("input[type=number]").value;
-				return [name, amt];
-			})
-		),
-		hasBeenPaid: program.hasBeenPaid,
-		reportSubmitted: program.reportSubmitted,
+		notes,
+		payees,
+		hasBeenPaid: paidInput ? paidInput.checked : !!program.hasBeenPaid,
+		reportSubmitted: submittedInput
+			? submittedInput.checked
+			: !!program.reportSubmitted,
 	};
 }
 
@@ -353,19 +395,17 @@ function restoreProgramState(
 	saveBtn,
 	cancelBtn
 ) {
+	// Restore notes
 	notesField.querySelector("textarea").value = state.notes;
+
+	// Remove current payees then re-add preserved ones
 	payeeSection.querySelectorAll(".payee-item").forEach((el) => el.remove());
+	const controlDiv = payeeSection.querySelector("div");
+	Object.entries(state.payees).forEach(([name, amt]) => {
+		addPayee(payeeSection, program.programName, controlDiv, name, amt);
+	});
 
-	for (const [name, amt] of Object.entries(state.payees)) {
-		addPayee(
-			payeeSection,
-			program.programName,
-			payeeSection.querySelector("div"),
-			name,
-			amt
-		);
-	}
-
+	// Restore checkbox values into the program object (so display matches underlying data)
 	program.hasBeenPaid = state.hasBeenPaid;
 	program.reportSubmitted = state.reportSubmitted;
 
@@ -375,35 +415,98 @@ function restoreProgramState(
 	cancelBtn.style.display = "none";
 }
 
+/**
+ * Save edited program fields back into the program object.
+ * IMPORTANT: payee amounts are converted to numbers here (Option 2 chosen).
+ */
 function saveProgramState(
 	payeeSection,
 	notesField,
-	program,
 	fieldsetRef,
+	program,
 	editBtn,
 	saveBtn,
 	cancelBtn
 ) {
+	// Notes
 	program.notes = notesField.querySelector("textarea").value;
-	program.payees = {};
 
+	// Payees: convert amounts to numbers (fallback to 0 if invalid)
+	const newPayees = {};
+	let hasValidationError = false;
 	payeeSection.querySelectorAll(".payee-item").forEach((item) => {
-		const name = item.querySelector("input[type=text]").value;
-		const amt = item.querySelector("input[type=number]").value;
-		program.payees[name] = amt;
+		const nameInput = item.querySelector("input[type=text]");
+		const amountInput = item.querySelector("input[type=number]");
+
+		const name = nameInput.value.trim();
+		const amtRaw = amountInput.value.trim();
+
+		// Case 1: Both empty → remove the row
+		if (name === "" && amtRaw === "") {
+			item.remove();
+			return;
+		}
+
+		// Case 2: name is missing
+		if (name === "") {
+			hasValidationError = true;
+			nameInput.style.border = name === "" ? "1px solid red" : "";
+
+			// Reset border when user clicks the input
+			nameInput.onclick = () => {
+				nameInput.style.border = "";
+			};
+		}
+
+		if (amtRaw === "") {
+			hasValidationError = true;
+			console.log(amtRaw === "");
+			amountInput.style.border = amtRaw === "" ? "1px solid red" : "";
+			amountInput.onclick = () => {
+				amountInput.style.border = "";
+			};
+			console.log(1);
+		}
+
+		// Exit if there is an error
+		if (hasValidationError) {
+			return;
+		}
+
+		// Case 3: Both present → convert amount to number
+		const amt = Number.parseFloat(amtRaw);
+		newPayees[name] = Number.isFinite(amt) ? amt : 0;
 	});
 
+	// Stop save if validation failed
+	if (hasValidationError) {
+		return; // stay in edit mode
+	}
+
+	program.payees = newPayees;
+
+	// Checkboxes
+	const moneySection = fieldsetRef.querySelector(".program-money-section");
+	if (moneySection) {
+		const paidInput = moneySection._paidInput;
+		const submittedInput = moneySection._submittedInput;
+		if (paidInput) program.hasBeenPaid = paidInput.checked;
+		if (submittedInput) program.reportSubmitted = submittedInput.checked;
+	}
+
+	// Disable editing and reset button visibility
 	greyOutProgramCard(fieldsetRef);
 	editBtn.style.display = "inline-block";
 	saveBtn.style.display = "none";
 	cancelBtn.style.display = "none";
+
+	// Log values for testing
+	console.log(data);
 }
 
-/**
- * ============================
- * Payee Helpers
- * ============================
- */
+/* ----------------------------
+   Payee helpers
+   ---------------------------- */
 function addPayee(section, programName, controlDiv, name = "", amount = "") {
 	const index = section.querySelectorAll(".payee-item").length + 1;
 
@@ -411,6 +514,9 @@ function addPayee(section, programName, controlDiv, name = "", amount = "") {
 	wrapper.classList.add("payee-item");
 
 	const label = document.createElement("label");
+	label.htmlFor = `${programName
+		.toLowerCase()
+		.replace(/\s+/g, "-")}-payee-${index}`;
 	label.textContent = `Payee #${index}`;
 
 	const inputRow = document.createElement("div");
@@ -418,11 +524,19 @@ function addPayee(section, programName, controlDiv, name = "", amount = "") {
 
 	const nameInput = document.createElement("input");
 	nameInput.type = "text";
+	nameInput.id = `${programName
+		.toLowerCase()
+		.replace(/\s+/g, "-")}-payee-${index}`;
 	nameInput.value = name;
 
 	const amountInput = document.createElement("input");
 	amountInput.type = "number";
+	amountInput.id = `${programName
+		.toLowerCase()
+		.replace(/\s+/g, "-")}-payee-${index}-money`;
 	amountInput.value = amount;
+	amountInput.placeholder = "$";
+	amountInput.step = "0.01";
 
 	const removeBtn = createButton("Remove");
 	removeBtn.classList.add("remove-payee-btn");
@@ -439,25 +553,34 @@ function addPayee(section, programName, controlDiv, name = "", amount = "") {
 
 function updatePayeeNumbers(section) {
 	section.querySelectorAll(".payee-item").forEach((div, i) => {
-		div.querySelector("label").textContent = `Payee #${i + 1}`;
+		const label = div.querySelector("label");
+		if (label) label.textContent = `Payee #${i + 1}`;
+		// keep input ids in sync (optional)
+		const nameInput = div.querySelector("input[type=text]");
+		const moneyInput = div.querySelector("input[type=number]");
+		if (nameInput)
+			nameInput.id = nameInput.id.replace(/-payee-\d+/, `-payee-${i + 1}`);
+		if (moneyInput)
+			moneyInput.id = moneyInput.id.replace(
+				/-payee-\d+-money/,
+				`-payee-${i + 1}-money`
+			);
 	});
 }
 
-/**
- * ============================
- * Contact Info Handling
- * ============================
- */
+/* ----------------------------
+   Contact info edit/save/restore
+   ---------------------------- */
 contactEditBtn.onclick = () => {
-	const originalState = captureContactState();
+	const snapshot = captureContactState();
 	setEnabled(contactFields, true);
 
 	contactEditBtn.style.display = "none";
 	contactSaveBtn.style.display = "inline-block";
 	contactCancelBtn.style.display = "inline-block";
 
-	contactCancelBtn.onclick = () => restoreContactState(originalState);
-	contactSaveBtn.onclick = saveContactState;
+	contactCancelBtn.onclick = () => restoreContactState(snapshot);
+	contactSaveBtn.onclick = () => saveContactState();
 };
 
 function captureContactState() {
@@ -470,35 +593,53 @@ function captureContactState() {
 }
 
 function restoreContactState(state) {
-	Object.assign(selectedDivision, state);
+	// put the snapshot back into the selectedDivision and update UI
+	if (!selectedDivision) return;
+
+	selectedDivision.deanName = state.dean;
+	selectedDivision.penContact = state.pen;
+	selectedDivision.locRep = state.loc;
+	selectedDivision.chairName = state.chair;
+
 	updateContactInfo(selectedDivision.divisionName);
 	greyOutContactInfo();
+
+	// Log values for testing
+	console.log(data);
 }
 
 function saveContactState() {
-	Object.assign(selectedDivision, {
-		deanName: pForm.selectFieldset.deanRef.value,
-		penContact: pForm.selectFieldset.penRef.value,
-		locRep: pForm.selectFieldset.locRef.value,
-		chairName: pForm.selectFieldset.chairRef.value,
-	});
+	if (!selectedDivision) return;
+
+	selectedDivision.deanName = pForm.selectFieldset.deanRef.value;
+	selectedDivision.penContact = pForm.selectFieldset.penRef.value;
+	selectedDivision.locRep = pForm.selectFieldset.locRef.value;
+	selectedDivision.chairName = pForm.selectFieldset.chairRef.value;
+
+	// After saving, reflect changes and lock down UI
 	greyOutContactInfo();
+
+	// Log values for testing
+	console.log(data);
 }
 
 function updateContactInfo(name) {
-	const dept = data.departments.find((d) => d.divisionName === name);
-	selectedDivision = dept;
-
-	if (!dept) {
+	if (!name) {
 		setEnabled(contactFields, false);
 		contactFields.forEach((el) => (el.value = ""));
+		selectedDivision = null;
 		return;
 	}
 
-	pForm.selectFieldset.deanRef.value = dept.deanName;
-	pForm.selectFieldset.penRef.value = dept.penContact;
-	pForm.selectFieldset.locRef.value = dept.locRep;
-	pForm.selectFieldset.chairRef.value = dept.chairName;
+	const dept = data.departments.find((d) => d.divisionName === name);
+	if (!dept) return;
+
+	selectedDivision = dept;
+
+	pForm.selectFieldset.deanRef.value = dept.deanName || "";
+	pForm.selectFieldset.penRef.value = dept.penContact || "";
+	pForm.selectFieldset.locRef.value = dept.locRep || "";
+	pForm.selectFieldset.chairRef.value = dept.chairName || "";
 
 	setEnabled(contactFields, false);
 }
@@ -508,16 +649,20 @@ function updateProgramCards(name) {
 	createProgramCards(dept);
 }
 
-/**
- * ============================
- * Initialization
- * ============================
- */
-fillDivisionSelector();
-clearProgramCards();
-greyOutContactInfo();
+/* ----------------------------
+   Initialization
+   ---------------------------- */
+(function init() {
+	fillDivisionSelector();
+	clearContainer(pForm.programsFieldset.ref);
+	greyOutContactInfo();
 
-pForm.selectFieldset.divisionSelector.addEventListener("change", function () {
-	updateContactInfo(this.value);
-	updateProgramCards(this.value);
-});
+	// Wire change event for division selector
+	const selector = pForm.selectFieldset.divisionSelector;
+	if (selector) {
+		selector.addEventListener("change", function () {
+			updateContactInfo(this.value);
+			updateProgramCards(this.value);
+		});
+	}
+})();
